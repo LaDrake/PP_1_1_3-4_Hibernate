@@ -5,9 +5,6 @@ import jm.task.core.jdbc.util.Util;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,19 +27,19 @@ public class UserDaoHibernateImpl implements UserDao {
             session.createSQLQuery(sql).executeUpdate();
             session.getTransaction().commit();
         } catch (Exception e) {
-            sessionFactory.getCurrentSession().getTransaction().rollback();
+            sessionFactory.getCurrentSession().getTransaction();
         }
     }
 
     @Override
     public void dropUsersTable() {
-        String sql = "TRUNCATE TABLE users";
+        String sql = "DROP TABLE IF EXISTS users";
         try (Session session = sessionFactory.openSession()) {
             session.beginTransaction();
             session.createSQLQuery(sql).addEntity(User.class).executeUpdate();
             session.getTransaction().commit();
         } catch (Exception e) {
-            sessionFactory.getCurrentSession().getTransaction().rollback();
+            sessionFactory.getCurrentSession().getTransaction();
         }
     }
 
@@ -71,14 +68,16 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public List<User> getAllUsers() {
-        List<User> list;
-        try (Session session = Util.getSessionFactory().openSession()){
+        List<User> list = new ArrayList<>();
+        try (Session session = Util.getSessionFactory().openSession()) {
             session.beginTransaction();
-            list = session.createQuery("from User").getResultList();
-            for (User u: list) {
+            list = session.createQuery("from User", User.class).getResultList();
+            for (User u : list) {
                 System.out.println(u);
             }
             session.getTransaction().commit();
+        } catch (Exception e) {
+            sessionFactory.getCurrentSession().getTransaction();
         }
         return list;
     }
@@ -91,7 +90,7 @@ public class UserDaoHibernateImpl implements UserDao {
             session.createSQLQuery(sql).executeUpdate();
             session.getTransaction().commit();
         } catch (Exception e) {
-            sessionFactory.getCurrentSession().getTransaction().rollback();
+            sessionFactory.getCurrentSession().getTransaction();
         }
     }
 }
